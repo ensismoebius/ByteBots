@@ -14,8 +14,8 @@ end
 
 function script1_logic()
     -- Your script logic here
-    print("Executing script1 logic")
-    return false
+    print("Executing script2 logic")
+    return true
 end
 
 

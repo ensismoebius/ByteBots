@@ -14,7 +14,7 @@ end
 function script1_logic()
     -- Your script logic here
     print("Executing script1 logic")
-    return false
+    return true
 end
 
 -- This is a Lua script sample

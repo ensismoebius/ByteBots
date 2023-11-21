@@ -3,39 +3,39 @@
 #include <string>
 #include <vector>
 
-bool executeScript(lua_State* L1)
+bool executeLuaScript(lua_State* luaState)
 {
     // Call the Lua function script1_logic
-    lua_getglobal(L1, "script1_logic");
+    lua_getglobal(luaState, "script1_logic");
 
-    if (!lua_isfunction(L1, -1)) {
+    if (!lua_isfunction(luaState, -1)) {
         // Handle the case where the function is not defined
         std::cerr << "Error: script2_logic is not defined in script2.lua" << std::endl;
-        lua_pop(L1, 1); // Pop the value from the stack
+        lua_pop(luaState, 1); // Pop the value from the stack
         return false;
     }
 
-    if (lua_pcall(L1, 0, 1, 0) != 0) {
+    if (lua_pcall(luaState, 0, 1, 0) != 0) {
         // Handle error
-        fprintf(stderr, "Error calling script1_logic: %s\n", lua_tostring(L1, -1));
-        lua_pop(L1, 1); // Pop the error message from the stack
+        fprintf(stderr, "Error calling script1_logic: %s\n", lua_tostring(luaState, -1));
+        lua_pop(luaState, 1); // Pop the error message from the stack
         return false;
     }
 
     // Check the return value
-    if (!lua_toboolean(L1, -1)) {
+    if (!lua_toboolean(luaState, -1)) {
         std::cout << "Terminating cycles due to script1_logic returning false." << std::endl;
         return false;
     }
 
     // Clear the Lua stacks
-    lua_settop(L1, 0);
+    lua_settop(luaState, 0);
     return true;
 }
 
-void closeLuaStates(lua_State* L1)
+void closeLuaStates(lua_State* luaState)
 {
-    lua_close(L1);
+    lua_close(luaState);
 }
 
 int main(int argc, char* argv[])
@@ -68,7 +68,7 @@ int main(int argc, char* argv[])
     }
     while (resume) {
         for (int i = 0; i < luaStates.size(); i++) {
-            resume = executeScript(luaStates[i]);
+            resume = executeLuaScript(luaStates[i]);
         }
     }
 
