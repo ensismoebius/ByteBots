@@ -1,0 +1,47 @@
+// main.cpp
+
+#include <iostream>
+#include <lua.hpp> // Lua header file
+
+int main(int argc, char* argv[])
+{
+    if (argc < 2) {
+        std::cerr << "Usage: " << argv[0] << " <lua_script1.lua> [<lua_script2.lua> ...]" << std::endl;
+        return 1;
+    }
+
+    // Initialize Lua
+    lua_State* L = luaL_newstate();
+    luaL_openlibs(L);
+
+    for (int i = 1; i < argc; ++i) {
+        const char* luaScriptFilename = argv[i];
+
+        // Load and execute Lua script
+        if (luaL_loadfile(L, luaScriptFilename) || lua_pcall(L, 0, LUA_MULTRET, 0)) {
+            std::cerr << "Error executing Lua script '" << luaScriptFilename << "': " << lua_tostring(L, -1) << std::endl;
+        }
+
+        // Get the main coroutine from the Lua state
+        lua_State* coroutine = lua_tothread(L, -1);
+
+        // Resume the coroutine to execute one instruction
+        int status = lua_resume(coroutine, 0);
+
+        if (status == 0) {
+            std::cout << "Execution of Lua script '" << luaScriptFilename << "' completed." << std::endl;
+        } else if (status == LUA_YIELD) {
+            std::cout << "Lua script '" << luaScriptFilename << "' yielded, can be resumed later." << std::endl;
+        } else if (status != 0 && status != LUA_YIELD) {
+            std::cerr << "Error in Lua script '" << luaScriptFilename << "': " << lua_tostring(coroutine, -1) << std::endl;
+        }
+
+        // Clean up Lua state
+        lua_pop(L, 1);
+    }
+
+    // Clean up Lua
+    lua_close(L);
+
+    return 0;
+}
